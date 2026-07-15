@@ -64,5 +64,21 @@ class DeleteAccountIn(BaseModel):
     password: str
 
 
+class TelegramSettingsOut(BaseModel):
+    chat_id: str | None
+    notifications_enabled: bool
+    link_token: str
+    deep_link: str | None
+    bot_username: str | None
+    linked_at: datetime | None
+    timezone: str
+    bot_configured: bool
+
+
+class TelegramSettingsIn(BaseModel):
+    notifications_enabled: bool
+    timezone: str = Field(min_length=1, max_length=64)
+
+
 class OkOut(BaseModel):
     ok: bool = True

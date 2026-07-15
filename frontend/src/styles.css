@@ -967,6 +967,54 @@ kbd {
   font-weight: 600;
   color: var(--text-muted);
 }
+.checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  color: var(--text) !important;
+}
+.checkbox-label input {
+  width: 16px;
+  height: 16px;
+}
+.telegram-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.telegram-status strong { color: var(--text); }
+.telegram-token {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+.telegram-token code {
+  flex: 1;
+  min-width: 220px;
+  overflow-wrap: anywhere;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+}
+.telegram-link {
+  margin: -0.25rem 0 1rem;
+  width: fit-content;
+  text-decoration: none;
+}
+.settings-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
 .settings-card button[type="submit"] { align-self: flex-start; }
 .success {
   background: rgba(18, 185, 129, 0.14);

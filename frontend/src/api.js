@@ -71,6 +71,16 @@ export const api = {
       method: 'POST',
       body: { current_password: currentPassword, new_password: newPassword },
     }),
+  getTelegramSettings: () => request('/account/telegram'),
+  updateTelegramSettings: (notificationsEnabled, timezone) =>
+    request('/account/telegram', {
+      method: 'PUT',
+      body: { notifications_enabled: notificationsEnabled, timezone },
+    }),
+  regenerateTelegramToken: () =>
+    request('/account/telegram/regenerate-token', { method: 'POST' }),
+  sendTelegramTestMessage: () =>
+    request('/account/telegram/test-message', { method: 'POST' }),
   deleteAccount: (password) =>
     request('/account', { method: 'DELETE', body: { password } }),
 };

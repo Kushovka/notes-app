@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { clearToken } from '../auth.js';
@@ -15,6 +15,30 @@ export default function Settings() {
 
   const [deletePw, setDeletePw] = useState('');
   const [deleteError, setDeleteError] = useState(null);
+
+  const [telegram, setTelegram] = useState(null);
+  const [telegramTimezone, setTelegramTimezone] = useState('UTC');
+  const [telegramEnabled, setTelegramEnabled] = useState(false);
+  const [telegramError, setTelegramError] = useState(null);
+  const [telegramOk, setTelegramOk] = useState(false);
+  const [telegramTestOk, setTelegramTestOk] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    api.getTelegramSettings()
+      .then((data) => {
+        if (!active) return;
+        setTelegram(data);
+        setTelegramTimezone(data.timezone);
+        setTelegramEnabled(data.notifications_enabled);
+      })
+      .catch((err) => {
+        if (active) setTelegramError(err.message);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const changePassword = async (e) => {
     e.preventDefault();
@@ -40,6 +64,48 @@ export default function Settings() {
       navigate('/login', { replace: true });
     } catch (err) {
       setDeleteError(err.message);
+    }
+  };
+
+  const saveTelegram = async (e) => {
+    e.preventDefault();
+    setTelegramError(null);
+    setTelegramOk(false);
+    setTelegramTestOk(false);
+    try {
+      const data = await api.updateTelegramSettings(telegramEnabled, telegramTimezone);
+      setTelegram(data);
+      setTelegramTimezone(data.timezone);
+      setTelegramEnabled(data.notifications_enabled);
+      setTelegramOk(true);
+    } catch (err) {
+      setTelegramError(err.message);
+    }
+  };
+
+  const regenerateTelegramToken = async () => {
+    setTelegramError(null);
+    setTelegramOk(false);
+    setTelegramTestOk(false);
+    try {
+      const data = await api.regenerateTelegramToken();
+      setTelegram(data);
+      setTelegramTimezone(data.timezone);
+      setTelegramEnabled(data.notifications_enabled);
+    } catch (err) {
+      setTelegramError(err.message);
+    }
+  };
+
+  const sendTelegramTest = async () => {
+    setTelegramError(null);
+    setTelegramOk(false);
+    setTelegramTestOk(false);
+    try {
+      await api.sendTelegramTestMessage();
+      setTelegramTestOk(true);
+    } catch (err) {
+      setTelegramError(err.message);
     }
   };
 
@@ -75,6 +141,66 @@ export default function Settings() {
           {pwOk && <div className="success">{t('settings.passwordChanged')}</div>}
           <button type="submit" className="btn btn-primary">{t('settings.submit')}</button>
         </form>
+      </section>
+
+      <section className="settings-card">
+        <h2>{t('settings.telegramTitle')}</h2>
+        {telegram && (
+          <>
+            <p className="settings-hint">
+              {telegram.bot_configured
+                ? t('settings.telegramHint')
+                : t('settings.telegramBotMissing')}
+            </p>
+            <div className="telegram-status">
+              <span>{t('settings.telegramStatus')}</span>
+              <strong>
+                {telegram.chat_id ? t('settings.telegramLinked') : t('settings.telegramNotLinked')}
+              </strong>
+            </div>
+            <div className="telegram-token">
+              <code>/start {telegram.link_token}</code>
+              <button type="button" className="btn btn-ghost" onClick={regenerateTelegramToken}>
+                {t('settings.telegramRegenerate')}
+              </button>
+            </div>
+            {telegram.deep_link && (
+              <a className="telegram-link btn" href={telegram.deep_link} target="_blank" rel="noreferrer">
+                {t('settings.telegramOpenBot')}
+              </a>
+            )}
+            <form onSubmit={saveTelegram}>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={telegramEnabled}
+                  onChange={(e) => setTelegramEnabled(e.target.checked)}
+                />
+                {t('settings.telegramEnable')}
+              </label>
+              <label>
+                {t('settings.telegramTimezone')}
+                <input
+                  value={telegramTimezone}
+                  onChange={(e) => setTelegramTimezone(e.target.value)}
+                  placeholder="UTC"
+                  required
+                />
+              </label>
+              {telegramError && <div className="error">{telegramError}</div>}
+              {telegramOk && <div className="success">{t('settings.telegramSaved')}</div>}
+              {telegramTestOk && <div className="success">{t('settings.telegramTestSent')}</div>}
+              <div className="settings-actions">
+                <button type="submit" className="btn btn-primary">{t('settings.telegramSave')}</button>
+                <button type="button" className="btn" onClick={sendTelegramTest}>
+                  {t('settings.telegramSendTest')}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
+        {!telegram && !telegramError && <p className="settings-hint">{t('settings.telegramLoading')}</p>}
+        {!telegram && telegramError && <div className="error">{telegramError}</div>}
       </section>
 
       <section className="settings-card danger">
